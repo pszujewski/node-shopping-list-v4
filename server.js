@@ -88,7 +88,9 @@ app.delete('/shopping-list/:id', (req, res) => {
 
 
 app.get('/recipes', (req, res) => {
-  res.json(Recipes.get());
+  let result = Recipes.get();
+  console.log(result);
+  res.json(result);
 });
 
 app.post('/recipes', jsonParser, (req, res) => {
@@ -110,6 +112,32 @@ app.delete('/recipes/:id', (req, res) => {
   Recipes.delete(req.params.id);
   console.log(`Deleted recipe \`${req.params.ID}\``);
   res.status(204).end();
+});
+
+app.put('/recipes/:id', jsonParser, (req, res) => {
+  const requiredFields = ['id', 'name', 'ingredients'];
+  for (let i=0; i<requiredFields.length; i++) {
+    let field = requiredFields[i];
+    if (!(field in req.body)) {
+      let message = `Missing ${field} in request body`;
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+  if (req.body.id !== req.params.id) {
+    let message = `Id in request body must match id in url`;
+    console.error(message);
+    return res.status(400).send(message);
+  } else {
+    let message = 'Success';
+    let updatedItem = Recipes.update({
+      id: req.body.id,
+      name: req.body.name,
+      ingredients: req.body.ingredients
+    });
+    console.log(message);
+    return res.status(204).json(updatedItem);
+  }
 });
 
 app.listen(process.env.PORT || 8080, () => {
